@@ -24,4 +24,19 @@ export class EvaController {
         console.log(this.context)
         return onlyReply;
         };
+
+        @Get('test')
+        async testConnection() {
+          try {
+            
+            return { message: 'Conexión exitosa.', content: await this.dataBaseAccess.query('SELECT * FROM Persona') };
+          } catch (error) {
+            console.error('Error de conexión:', error);
+            return { message: 'Error al conectar a la base de datos', error : error };
+          }
+        }
+
     }
+    
+
+    
