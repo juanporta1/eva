@@ -1,7 +1,8 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Post, Query } from '@nestjs/common';
 import { AppService } from '../app.service';
 import { EvaService } from '../services/eva/eva.service';
 import { DataBaseAccessService } from '../services/dataBaseAccess/data-base-access.service';
+
 
 type Context = {
     role: "system" | "user" | "assistant",
@@ -20,20 +21,13 @@ export class EvaController {
         const reply = await this.eva.getReply(this.context, 1, 1000)
         const onlyReply: string = reply.content
         this.context.push({role: "assistant", content: onlyReply})
-        this.dataBaseAccess.getUsers()
         console.log(this.context)
         return onlyReply;
         };
 
-        @Get('test')
-        async testConnection() {
-          try {
-            
-            return { message: 'Conexión exitosa.', content: await this.dataBaseAccess.query('SELECT * FROM Persona') };
-          } catch (error) {
-            console.error('Error de conexión:', error);
-            return { message: 'Error al conectar a la base de datos', error : error };
-          }
+        @Get("test")
+        async testConnection(@Query("name") name: string, @Query("account") account: string,@Query("password") password: string) {
+          await this.dataBaseAccess.createUser(name,account,password)
         }
 
     }

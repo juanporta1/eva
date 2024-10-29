@@ -3,23 +3,28 @@ import { Client } from 'ssh2';
 import { createConnection, Connection } from 'mysql2';
 import net from 'net';
 import { resolve } from 'path';
-
 @Injectable()
 export class DataBaseAccessService implements OnModuleDestroy, OnModuleInit {
   private dbConnection: Connection;
-  
+  private sshConfig = {
+    host: 'gestion-imdf.ddns.net',
+    port: 22,
+    username: 'alumno6to',
+    password: 'Ismdf.309',
+  };
   async query(sql, params = []) {
-    if (!this.dbConnection){
-      console.log("No se a conectado correctamente a la base de datos")
+    if (!this.dbConnection) {
+      console.log('No se a conectado correctamente a la base de datos');
     }
     return new Promise((resolve, reject) => {
-      this.dbConnection.query(sql, params, (err, results) =>{
+      this.dbConnection.query(sql, params, (err, results) => {
         if (err) reject(err);
         else resolve(results);
-      })
-    })
+      });
+    });
   }
 
+ 
   async onModuleInit() {
     console.log('Modulo Iniciado');
     const sshClient = new Client();
@@ -69,9 +74,8 @@ export class DataBaseAccessService implements OnModuleDestroy, OnModuleInit {
       password: 'Ismdf.309',
     });
   }
-
-  async getUsers() {
-    const users = await this.query("SELECT * FROM Users");
+  async createUser(name, account, password) {
+    await this.query("INSERT INTO Users (name, account, password) VALUES (?. ?, ?)", [name, account,password])
   }
   async onModuleDestroy() {
     console.log('Modulo Destruido');
