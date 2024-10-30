@@ -9,7 +9,7 @@ export class User {
     accountName: string;
     @Column()
     password: string;
-    @Column({type: 'text', default: 'No se tiene contexto.'})
+    @Column({type: 'varchar', default:'No se tiene contexto.'})
     userContext: string;
     @Column({ type: "datetime", default: () => 'CURRENT_TIMESTAMP' })
     lastUpdate: Date;
