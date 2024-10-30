@@ -1,7 +1,7 @@
-import { Controller, Get, Post, Query } from '@nestjs/common';
+import { Controller, Get, Query } from '@nestjs/common';
 import { AppService } from '../app.service';
 import { EvaService } from '../services/eva/eva.service';
-import { DataBaseAccessService } from '../services/dataBaseAccess/data-base-access.service';
+
 
 
 type Context = {
@@ -11,7 +11,7 @@ type Context = {
 @Controller('eva')
 export class EvaController {
 
-    constructor(private readonly appService: AppService, private eva: EvaService, private readonly dataBaseAccess: DataBaseAccessService){}
+    constructor(private readonly appService: AppService, private eva: EvaService){}
     context: Array<Context> = [{role: "system", content: "Eres Eva de la pelicula Wall-E"}]
 
 
@@ -25,10 +25,7 @@ export class EvaController {
         return onlyReply;
         };
 
-        @Get("test")
-        async testConnection(@Query("name") name: string, @Query("account") account: string,@Query("password") password: string) {
-          await this.dataBaseAccess.createUser(name,account,password)
-        }
+
 
     }
     
