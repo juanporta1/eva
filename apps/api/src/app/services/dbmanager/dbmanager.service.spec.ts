@@ -1,15 +1,15 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { SshTunnelService } from './ssh-tunnel.service';
+import { DbmanagerService } from './dbmanager.service';
 
-describe('SshTunnelService', () => {
-  let service: SshTunnelService;
+describe('DbmanagerService', () => {
+  let service: DbmanagerService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [SshTunnelService],
+      providers: [DbmanagerService],
     }).compile();
 
-    service = module.get<SshTunnelService>(SshTunnelService);
+    service = module.get<DbmanagerService>(DbmanagerService);
   });
 
   it('should be defined', () => {
