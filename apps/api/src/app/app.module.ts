@@ -6,8 +6,7 @@ import { EvaService } from './services/eva/eva.service';
 import { User } from './entities/user.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DbmanagerService } from './services/dbmanager/dbmanager.service';
-
-
+import { DatabaseController } from './database/database.controller';
 
 const dbPassword = process.env.DBPASSWORD;
 @Module({
@@ -22,8 +21,9 @@ const dbPassword = process.env.DBPASSWORD;
       entities: [User],
       synchronize: true,
     }),
-  TypeOrmModule.forFeature([User])],
-  controllers: [AppController, EvaController],
+    TypeOrmModule.forFeature([User]),
+  ],
+  controllers: [AppController, EvaController, DatabaseController],
   providers: [AppService, EvaService, DbmanagerService],
 })
 export class AppModule {}
