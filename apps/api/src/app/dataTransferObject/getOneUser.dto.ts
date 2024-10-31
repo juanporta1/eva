@@ -1,5 +1,5 @@
 
 export class GetOneUser{
-    accountName ?: string;
-    userID ?: number;
+    account ?: string;
+    id ?: number;
 }

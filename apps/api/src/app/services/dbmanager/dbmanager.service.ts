@@ -1,27 +1,43 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm'
 import { User } from '../../entities/user.entity';
 import { Repository } from 'typeorm'
 import { CreateUserDTO } from '../../dataTransferObject/createUser.dto';
 import { GetOneUser } from '../../dataTransferObject/getOneUser.dto';
+import { CreateInteractionDTO } from '../../dataTransferObject/createInteraction.dto';
+import { Interaction } from '../../entities/interaction.entity';
 
 @Injectable()
 export class DbmanagerService {
-    constructor(@InjectRepository(User) private userRepository: Repository<User>){}
+    constructor(@InjectRepository(User) private userRepository: Repository<User>, @InjectRepository(Interaction) private interactionRepository: Repository<Interaction>){}
 
     async createUser(user: CreateUserDTO){
         const newUser = this.userRepository.create(user)
         return await this.userRepository.save(newUser)
     }
+    async createInteraction(interaction: CreateInteractionDTO){
+        const user = await this.userRepository.findOneBy({userID: interaction.userID})
+        if(!user) return new HttpException("User not found",404)
+        
+        const newInteraction = this.interactionRepository.create(interaction);
+        return await this.interactionRepository.save(newInteraction);
+    }
 
-    async getUserByIdOrName(filter: GetOneUser): Promise<User[]>{
+    async getOneUser(filter: GetOneUser): Promise<User[]>{
        const queryBuilder = this.userRepository.createQueryBuilder("user")
-       if (filter.userID){
-        await queryBuilder.orWhere("user.userID = :id", {id : filter.userID})
+       if (filter.id){
+        await queryBuilder.orWhere("user.userID = :id", {id : filter.id})
        }
-       if (filter.accountName){
-        await queryBuilder.orWhere("user.accountName = :accountName", {accountName : filter.accountName})
+       if (filter.account){
+        await queryBuilder.orWhere("user.accountName = :accountName", {accountName : filter.account})
        }
        return queryBuilder.getMany(); 
     }
+
+    async getUserFromInteraction(){
+        return await this.interactionRepository.find({
+            relations: ["user"]
+        })
+    }
+    
 }

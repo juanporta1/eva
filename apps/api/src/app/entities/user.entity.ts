@@ -1,4 +1,5 @@
-import { Entity, Column, PrimaryGeneratedColumn, BeforeInsert } from "typeorm";
+import { Entity, Column, PrimaryGeneratedColumn, BeforeInsert, OneToMany } from "typeorm";
+import { Interaction } from "./interaction.entity";
 @Entity({ name: "Users"})
 export class User {
     @PrimaryGeneratedColumn()
@@ -19,4 +20,7 @@ export class User {
 
     @Column({ type: "datetime", default: () => 'CURRENT_TIMESTAMP' })
     lastUpdate: Date;
+
+    @OneToMany(() => Interaction, interaction => interaction.user)
+    interactions: Interaction[];
 }
