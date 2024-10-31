@@ -20,10 +20,11 @@ export class DbmanagerService {
         if(!user) return new HttpException("User not found",404)
         
         const newInteraction = this.interactionRepository.create(interaction);
+        newInteraction.user = user;
         return await this.interactionRepository.save(newInteraction);
     }
 
-    async getOneUser(filter: GetOneUser): Promise<User[]>{
+    async getOneUser(filter: GetOneUser): Promise<User>{
        const queryBuilder = this.userRepository.createQueryBuilder("user")
        if (filter.id){
         await queryBuilder.orWhere("user.userID = :id", {id : filter.id})
@@ -31,13 +32,41 @@ export class DbmanagerService {
        if (filter.account){
         await queryBuilder.orWhere("user.accountName = :accountName", {accountName : filter.account})
        }
-       return queryBuilder.getMany(); 
+       return queryBuilder.getOne(); 
     }
 
-    async getUserFromInteraction(){
-        return await this.interactionRepository.find({
+    async getInteractions(filter: GetOneUser): Promise<Interaction[] | HttpException>{
+        let userInteractions;
+        if (filter.id){
+         userInteractions = await this.userRepository.find({
+            where: {
+                userID: filter.id
+            },
+            relations:["interactions"]
+         }) 
+        }
+        else if (filter.account){
+        userInteractions = await this.userRepository.find({
+                where: {
+                    accountName: filter.account
+                },
+                relations:["interactions"]
+             }) 
+        }
+        if (!userInteractions) return new HttpException("User not found",404);
+        return userInteractions; 
+     }
+
+    async getOneInteraction(id: number): Promise<Interaction | HttpException>{
+        const interaction = await this.interactionRepository.findOne({
+            where:{
+                interactionID: id
+            },
             relations: ["user"]
-        })
+        });
+        if(!interaction) return new HttpException("Interaction not found",404);
+        
+        return interaction;
     }
     
 }

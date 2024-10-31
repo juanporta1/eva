@@ -24,9 +24,13 @@ export class DatabaseController {
         return await this.dbManager.getOneUser(filter);
     }
 
-    @Get("getUserFromInteraction")
-    async getUserFromInteraction(){
-        return this.dbManager.getUserFromInteraction();
+    @Get("getOneInteraction")
+    async getUserFromInteraction(@Query("id") id: number){
+        return await this.dbManager.getOneInteraction(id);
     }
 
+    @Get("getInteractions")
+    async getInteractions(@Query() filter: GetOneUser){
+        return await this.dbManager.getInteractions(filter);
+    }
 }
