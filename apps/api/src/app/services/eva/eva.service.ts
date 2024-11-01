@@ -12,10 +12,11 @@ const CHATGPT_KEY = process.env.CHATGPTKEY;
 export class EvaService {
    openai = new OpenAI({apiKey: CHATGPT_KEY});
    async getReply(context: Array<Message>, temperature: number, max_tokens: number){
+      
       try{ 
          
          const reply = await this.openai.chat.completions.create({
-            model: "gpt-3.5-turbo",
+            model: "gpt-4o-mini",
             temperature:temperature,
             max_tokens: max_tokens,
             messages: context
@@ -26,6 +27,8 @@ export class EvaService {
          throw err;
       }
    }
+
+
  }
 
 

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Patch, Post, Query } from '@nestjs/common';
 import { CreateUserDTO } from '../../dataTransferObject/createUser.dto';
 import { DbmanagerService } from '../../services/dbmanager/dbmanager.service';
 import { GetOneUser } from '../../dataTransferObject/getOneUser.dto';
@@ -10,7 +10,7 @@ export class DatabaseController {
 
     @Post("createUser")
     async createUser(@Body() newUser: CreateUserDTO){
-        return  await this.dbManager.createUser(newUser);;
+        return  await this.dbManager.createUser(newUser);
     }
 
     @Post("createInteraction")
@@ -18,7 +18,15 @@ export class DatabaseController {
         return await this.dbManager.createInteraction(newInteraction);
     }
     
-
+    @Post("openSession")
+    async openSession(@Body() newSession: {userID: number}){
+        return await this.dbManager.openSession(newSession.userID);
+    }
+    
+    @Patch("closeSession")
+    async closeSession(@Body() session ?: {sessionID: number}){
+        return await this.dbManager.closeSession(session.sessionID);
+    }
     @Get("getOneUser")
     async getUserByIdOrName(@Query() filter: GetOneUser){
         return await this.dbManager.getOneUser(filter);

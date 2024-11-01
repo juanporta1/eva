@@ -6,10 +6,17 @@ import { CreateUserDTO } from '../../dataTransferObject/createUser.dto';
 import { GetOneUser } from '../../dataTransferObject/getOneUser.dto';
 import { CreateInteractionDTO } from '../../dataTransferObject/createInteraction.dto';
 import { Interaction } from '../../entities/interaction.entity';
+import { Session } from '../../entities/session.entity';
 
 @Injectable()
 export class DbmanagerService {
-    constructor(@InjectRepository(User) private userRepository: Repository<User>, @InjectRepository(Interaction) private interactionRepository: Repository<Interaction>){}
+    constructor(@InjectRepository(User) private userRepository: Repository<User>, @InjectRepository(Interaction) private interactionRepository: Repository<Interaction>, @InjectRepository(Session) private sessionRepository: Repository<Session>){}
+
+    private async setTodayDate() {
+        const today = new Date();
+        return `${today.getFullYear()}-${today.getMonth()}-${today.getDay()} ${today.getHours()}:${today.getMinutes()}:${today.getSeconds()}`
+    }
+
 
     async createUser(user: CreateUserDTO){
         const newUser = this.userRepository.create(user)
@@ -22,6 +29,33 @@ export class DbmanagerService {
         const newInteraction = this.interactionRepository.create(interaction);
         newInteraction.user = user;
         return await this.interactionRepository.save(newInteraction);
+    }
+
+    async openSession(userID){
+        const user = await this.userRepository.findOneBy({userID: userID});
+        if(!user) return new HttpException("User not found",404);
+        const newSession = await this.sessionRepository.create({userID: userID, user: user});
+        return await this.sessionRepository.save(newSession);
+    }
+
+    async closeSession(id ?: number){
+        if (id){
+            const session = await this.sessionRepository.findOneBy({sessionID: id});
+            if (session.endDate) return new HttpException("This Session alredy has a endDate",403)
+            return await this.sessionRepository.update({sessionID: id}, {
+                endDate: await this.setTodayDate()
+            })
+        }
+        else{
+            const [lastSession] = await this.sessionRepository.find({
+                order: {sessionID: "DESC"},
+                take:1,
+            })
+            if (lastSession.endDate) return new HttpException("This Session alredy has a endDate",403)
+                return await this.sessionRepository.update({sessionID: lastSession.sessionID}, {
+                    endDate: await this.setTodayDate()
+                })
+        }
     }
 
     async getOneUser(filter: GetOneUser): Promise<User>{

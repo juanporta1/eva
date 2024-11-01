@@ -8,7 +8,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { DbmanagerService } from './services/dbmanager/dbmanager.service';
 import { DatabaseController } from './controllers/database/database.controller';
 import { Interaction } from './entities/interaction.entity';
-
+import  { Session } from './entities/session.entity';
 const dbPassword = process.env.DBPASSWORD;
 @Module({
   imports: [
@@ -19,10 +19,10 @@ const dbPassword = process.env.DBPASSWORD;
       username: 'root',
       password: dbPassword,
       database: 'Eva',
-      entities: [User, Interaction],
+      entities: [User, Interaction,Session],
       synchronize: true,
     }),
-    TypeOrmModule.forFeature([User, Interaction]),
+    TypeOrmModule.forFeature([User, Interaction,Session]),
   ],
   controllers: [AppController, EvaController, DatabaseController],
   providers: [AppService, EvaService, DbmanagerService],
