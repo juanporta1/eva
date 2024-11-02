@@ -1,33 +1,20 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, HttpException, Query } from '@nestjs/common';
 import { AppService } from '../../app.service';
 import { EvaService } from '../../services/eva/eva.service';
+import { DbmanagerService } from '../../services/dbmanager/dbmanager.service';
 
-
-
-type Context = {
-    role: "system" | "user" | "assistant",
-    content: string
-}
 @Controller('eva')
 export class EvaController {
 
-    constructor(private readonly appService: AppService, private eva: EvaService){}
-    context: Array<Context> = [{role: "system", content: "Eres Eva de la pelicula Wall-E"}]
-
-
-    @Get("prompt")
-    async getReply(@Query("prompt") prompt: string){
-        this.context.push({role: "user", content: prompt})
-        const reply = await this.eva.getReply(this.context, 1, 1000)
-        const onlyReply: string = reply.content
-        this.context.push({role: "assistant", content: onlyReply})
-        console.log(this.context)
-        return onlyReply;
-        };
+    constructor(private readonly appService: AppService, private readonly eva: EvaService, private readonly database: DbmanagerService){}
+    @Get("getReply")
+    async getReply(@Query("prompt") prompt: string, @Query("id") sessionID: number){
+        const session = await this.database.getSession(sessionID);
+        if (session instanceof HttpException) return new HttpException("Session not found", 404)
+        return await this.eva.getReply(session, prompt)
+    };
 
 
 
     }
-    
-
     
