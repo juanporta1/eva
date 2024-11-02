@@ -8,6 +8,7 @@ import { CreateInteractionDTO } from '../../dataTransferObject/createInteraction
 import { Interaction } from '../../entities/interaction.entity';
 import { Session } from '../../entities/session.entity';
 
+
 @Injectable()
 export class DbmanagerService {
     constructor(@InjectRepository(User) private userRepository: Repository<User>, @InjectRepository(Interaction) private interactionRepository: Repository<Interaction>, @InjectRepository(Session) private sessionRepository: Repository<Session>){}
@@ -22,12 +23,17 @@ export class DbmanagerService {
         const newUser = this.userRepository.create(user)
         return await this.userRepository.save(newUser)
     }
+
     async createInteraction(interaction: CreateInteractionDTO){
-        const user = await this.userRepository.findOneBy({userID: interaction.userID})
-        if(!user) return new HttpException("User not found",404)
+        const session = await this.getSession(interaction.sessionID)
+        if (session instanceof HttpException) return new HttpException("Session not found",404) 
+        const user = await this.userRepository.findOneBy({userID: session.userID})
         
+        if(!user) return new HttpException("User not found",404)
+        interaction.sessionID = session.sessionID
         const newInteraction = this.interactionRepository.create(interaction);
-        newInteraction.user = user;
+
+        newInteraction.session = session;
         return await this.interactionRepository.save(newInteraction);
     }
 
@@ -46,16 +52,13 @@ export class DbmanagerService {
                 endDate: await this.setTodayDate()
             })
         }
-        else{
-            const [lastSession] = await this.sessionRepository.find({
-                order: {sessionID: "DESC"},
-                take:1,
-            })
-            if (lastSession.endDate) return new HttpException("This Session alredy has a endDate",403)
-                return await this.sessionRepository.update({sessionID: lastSession.sessionID}, {
-                    endDate: await this.setTodayDate()
-                })
-        }
+        
+    }
+
+    async getSession(id: number){
+        const session = await this.sessionRepository.findOneBy({sessionID: id})
+        if(!session) return new HttpException("Session not found",404);
+        return session;
     }
 
     async getOneUser(filter: GetOneUser): Promise<User>{
@@ -69,22 +72,31 @@ export class DbmanagerService {
        return queryBuilder.getOne(); 
     }
 
-    async getInteractions(filter: GetOneUser): Promise<Interaction[] | HttpException>{
-        let userInteractions;
+    async getInteractions(filter: GetOneUser): Promise<User[] | HttpException>{
+        let userInteractions: User[] | HttpException; 
         if (filter.id){
          userInteractions = await this.userRepository.find({
             where: {
                 userID: filter.id
             },
-            relations:["interactions"]
+            relations:{
+                sessions: {
+                    interactions: true
+                }
+            }
          }) 
+
         }
         else if (filter.account){
         userInteractions = await this.userRepository.find({
                 where: {
                     accountName: filter.account
                 },
-                relations:["interactions"]
+                relations:{
+                    sessions: {
+                        interactions: true
+                    }
+                }
              }) 
         }
         if (!userInteractions) return new HttpException("User not found",404);
@@ -96,7 +108,7 @@ export class DbmanagerService {
             where:{
                 interactionID: id
             },
-            relations: ["user"]
+            relations: ["session"]
         });
         if(!interaction) return new HttpException("Interaction not found",404);
         

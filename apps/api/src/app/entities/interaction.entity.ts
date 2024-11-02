@@ -1,5 +1,5 @@
 import { Entity, Column, PrimaryGeneratedColumn, BeforeInsert, ManyToOne, JoinColumn } from "typeorm";
-import { User } from "./user.entity";
+import { Session } from "./session.entity";
 
 @Entity({name: "Interactions"})
 export class Interaction{
@@ -7,12 +7,12 @@ export class Interaction{
     @PrimaryGeneratedColumn()
     interactionID: number;
 
-    @ManyToOne(() => User, user => user.interactions)
-    @JoinColumn({name: "userFK"})
-    user: User;
+    @ManyToOne(() => Session, session => session.interactions)
+    @JoinColumn({name: "sessionFK"})
+    session: Session;
 
-    @Column({type:"int"})
-    userID: number;
+    @Column({type: "int"})
+    sessionID: number;
 
     @Column({type: "text"})
     userPrompt: string;
