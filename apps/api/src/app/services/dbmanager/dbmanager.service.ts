@@ -13,7 +13,7 @@ import { Session } from '../../entities/session.entity';
 export class DbmanagerService {
     constructor(@InjectRepository(User) private userRepository: Repository<User>, @InjectRepository(Interaction) private interactionRepository: Repository<Interaction>, @InjectRepository(Session) private sessionRepository: Repository<Session>){}
 
-    private async setTodayDate() {
+    async setTodayDate() {
         const today = new Date();
         return `${today.getFullYear()}-${today.getMonth()}-${today.getDay()} ${today.getHours()}:${today.getMinutes()}:${today.getSeconds()}`
     }
@@ -56,9 +56,16 @@ export class DbmanagerService {
     }
 
     async getSession(id: number){
-        const session = await this.sessionRepository.findOneBy({sessionID: id})
+        const session = await this.sessionRepository.find({
+            where: {sessionID: id},
+            relations:{
+                user: true,
+                interactions: true
+            },
+            take: 1
+        })
         if(!session) return new HttpException("Session not found",404);
-        return session;
+        return session[0];
     }
 
     async getOneUser(filter: GetOneUser): Promise<User>{
@@ -115,4 +122,11 @@ export class DbmanagerService {
         return interaction;
     }
     
+    async updateUserContext(id:number, newContext: string){
+        const user = await this.userRepository.findOneBy({userID: id});
+        if (!user) return new HttpException("User not found",404);
+
+        this.userRepository.update({userID: id}, {userContext: newContext});
+
+    }
 }
